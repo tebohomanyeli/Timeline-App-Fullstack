@@ -21,7 +21,6 @@ export const useTimeline = () => {
             setItems(data.map(item => ({ ...item, timestamp: new Date(item.timestamp) })));
         } catch (error) {
             console.error("Failed to load items from API:", error);
-            // In case of an API error, you might want to set items to an empty array
             setItems([]);
         } finally {
             setIsLoading(false);
@@ -33,10 +32,8 @@ export const useTimeline = () => {
         fetchItems();
     }, [fetchItems]);
 
-    // Handles saving a manually added/edited item
     const handleSaveItem = (itemData, editingItem) => {
         // TODO: This should be migrated to a dedicated POST/PUT endpoint in the future.
-        // For now, it only updates the state on the client side for manual entries.
         if (editingItem) {
             setItems(currentItems =>
                 currentItems.map(item =>
@@ -52,7 +49,6 @@ export const useTimeline = () => {
         }
     };
 
-    // Handles uploading the .mbox file and refreshing the data
     const handleImportItems = async (file) => {
         const formData = new FormData();
         formData.append('mboxfile', file);
@@ -68,29 +64,51 @@ export const useTimeline = () => {
                 throw new Error('File upload failed.');
             }
             
-            // After a successful upload, refetch all items to update the timeline
             await fetchItems();
 
         } catch (error) {
             console.error("Failed to import and process MBOX file:", error);
-            // Optionally reset loading state here if you don't refetch on error
             setIsLoading(false);
         }
     };
 
-    // Handles deleting an item
-    const handleDeleteItem = (idToDelete) => {
-        // TODO: This should be migrated to a dedicated DELETE endpoint.
-        setItems(currentItems => currentItems.filter(item => item.id !== idToDelete));
+    // FIXED: Handles deleting an item by calling the backend
+    const handleDeleteItem = async (idToDelete) => {
+        try {
+            const response = await fetch(`${API_URL}/emails/${idToDelete}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to delete item');
+            }
+            // If successful, remove the item from the local state
+            setItems(currentItems => currentItems.filter(item => item.id !== idToDelete));
+        } catch (error) {
+            console.error("Error deleting item:", error);
+            alert("Failed to delete the item.");
+        }
     };
 
-    // Clears all items from the timeline
+    // FIXED: Clears all items from the timeline by calling the backend
     const clearItemsToEmpty = async () => {
-        // TODO: This should be migrated to a dedicated DELETE /api/emails/all endpoint.
-        setItems([]);
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${API_URL}/emails`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to clear items');
+            }
+            // If successful, clear the local state
+            setItems([]);
+        } catch (error) {
+            console.error("Error clearing items:", error);
+            alert("Failed to clear the timeline.");
+        } finally {
+            setIsLoading(false);
+        }
     };
     
-    // This function is no longer relevant as data comes from the backend.
     const resetItemsToDefault = () => {
         console.warn("resetItemsToDefault is deprecated. Data is now managed by the backend.");
     };

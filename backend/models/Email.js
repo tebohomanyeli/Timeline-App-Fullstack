@@ -4,7 +4,7 @@ const attachmentSchema = new mongoose.Schema({
   filename: String,
   contentType: String,
   size: Number,
-  content: Buffer, // Storing attachment content directly in the DB
+  fileId: String, // Changed from 'content: Buffer'
 });
 
 const emailSchema = new mongoose.Schema({
@@ -23,9 +23,9 @@ const emailSchema = new mongoose.Schema({
   gmailLabels: [String],
   title: { type: String, required: true },
   content: { type: String },
-  html: { type: String }, // Added for rich email content
+  html: { type: String },
   tags: [String],
-  attachments: [attachmentSchema], // Added attachments array
+  attachments: [attachmentSchema],
 });
 
 module.exports = mongoose.model('Email', emailSchema);

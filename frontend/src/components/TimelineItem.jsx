@@ -21,16 +21,14 @@ function TimelineItem({ item, onView, onDelete, threadIds, gmailLabels }) {
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'; // Blue for user tags
     };
     
-    // Helper function to create a clean text summary from HTML
     const createSummary = (html, fallbackText) => {
         if (html) {
             try {
-                // Use the browser's built-in parser to safely strip HTML tags
                 const doc = new DOMParser().parseFromString(html, 'text/html');
                 const text = doc.body.textContent || "";
                 return text.trim();
             } catch (e) {
-                return fallbackText; // Fallback in case of parsing error
+                return fallbackText;
             }
         }
         return fallbackText;
@@ -77,10 +75,8 @@ function TimelineItem({ item, onView, onDelete, threadIds, gmailLabels }) {
                 )}
                 <button
                     onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm(`Are you sure you want to delete "${item.title}"?`)) {
-                           onDelete(item.id);
-                        }
+                        e.stopPropagation(); // Prevent the detailed view from opening
+                        onDelete(item.id); // Directly call onDelete without confirmation
                     }}
                     className="absolute bottom-4 right-4 p-2 rounded-full bg-gray-100 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-300 opacity-0 group-hover:opacity-100 transition-all"
                     title="Delete Item"

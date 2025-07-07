@@ -88,11 +88,17 @@ function DetailedView({ item, onClose, onEdit, threadIds, gmailLabels }) {
             </div>
             <div className="space-y-2 pl-9">
                 {item.attachments.map((att, index) => (
-                    <div key={index} className="flex items-center text-sm p-2 rounded-md bg-gray-100 dark:bg-gray-700/50">
+                    <a
+                        key={index}
+                        href={`http://localhost:5000/api/attachments/${att.fileId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center text-sm p-2 rounded-md bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    >
                         <FileText className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                         <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{att.filename}</span>
                         <span className="text-gray-500 dark:text-gray-400 ml-auto flex-shrink-0">({(att.size / 1024).toFixed(2)} KB)</span>
-                    </div>
+                    </a>
                 ))}
             </div>
         </div>
