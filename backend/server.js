@@ -14,8 +14,8 @@ app.use(express.json());
 app.use('/api', emailRoutes);
 
 // Database Connection
-const MONGO_URI = 'mongodb://localhost:27017/timeline';
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+const MONGO_URI = 'mongodb://root:example@localhost:27017/timeline?authSource=admin';
+mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
 

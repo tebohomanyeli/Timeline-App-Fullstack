@@ -1,18 +1,20 @@
 const { simpleParser } = require('mailparser');
-const MboxReader = require('mbox-reader');
+const { mboxReader } = require('mbox-reader'); // Corrected import
 const Email = require('../models/Email');
 const { v4: uuidv4 } = require('uuid');
+const { createReadStream } = require('fs'); // Added for reading the file stream
 
 async function parseMboxFile(filePath) {
-    const mboxReader = new MboxReader(filePath);
-    let message;
-
     // Clear existing emails to avoid duplicates on re-upload
     await Email.deleteMany({});
 
-    while ((message = await mboxReader.readMessage()) !== null) {
+    const stream = createReadStream(filePath);
+
+    // Use for...await...of loop to process the mbox stream
+    for await (const message of mboxReader(stream)) {
         try {
-            const parsedEmail = await simpleParser(message);
+            // The message content is in a buffer called 'content'
+            const parsedEmail = await simpleParser(message.content);
 
             const emailData = {
                 id: uuidv4(),

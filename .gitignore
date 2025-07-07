@@ -31,3 +31,6 @@ lerna-debug.log*
 
 # Docker volumes
 backend/mongo-data/
+
+# Temporary files
+backend/uploads/

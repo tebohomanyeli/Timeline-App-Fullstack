@@ -11,7 +11,7 @@ router.post('/upload', upload.single('mboxfile'), async (req, res) => {
         await parseMboxFile(req.file.path);
         res.status(200).send('File uploaded and parsed successfully');
     } catch (error) {
-        console.error('Error parsing mbox file:', error);
+        console.error('Error parsing mbox file:', error); // Add this line
         res.status(500).send('Error parsing file');
     }
 });
@@ -21,6 +21,7 @@ router.get('/emails', async (req, res) => {
         const emails = await Email.find().sort({ timestamp: -1 });
         res.json(emails);
     } catch (error) {
+        console.error('Error fetching emails:', error); // <-- ADD THIS LINE
         res.status(500).json({ message: error.message });
     }
 });
@@ -33,6 +34,7 @@ router.get('/emails/:id', async (req, res) => {
         }
         res.json(email);
     } catch (error) {
+        console.error(`Error fetching email with id ${req.params.id}:`, error); // <-- AND ADD THIS LINE
         res.status(500).json({ message: error.message });
     }
 });

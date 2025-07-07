@@ -20,6 +20,22 @@ function TimelineItem({ item, onView, onDelete, threadIds, gmailLabels }) {
         }
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'; // Blue for user tags
     };
+    
+    // Helper function to create a clean text summary from HTML
+    const createSummary = (html, fallbackText) => {
+        if (html) {
+            try {
+                // Use the browser's built-in parser to safely strip HTML tags
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const text = doc.body.textContent || "";
+                return text.trim();
+            } catch (e) {
+                return fallbackText; // Fallback in case of parsing error
+            }
+        }
+        return fallbackText;
+    };
+
 
     return (
         <div className="flex items-start space-x-3 sm:space-x-4 relative pl-0 sm:pl-12 py-2 group">
@@ -27,7 +43,7 @@ function TimelineItem({ item, onView, onDelete, threadIds, gmailLabels }) {
             <div className="sm:hidden flex-shrink-0 pt-1">{getIcon(item.type)}</div>
 
             <div
-                className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 w-full border border-gray-200 dark:border-gray-700 cursor-pointer relative" // Added `relative` for correct button positioning
+                className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 w-full border border-gray-200 dark:border-gray-700 cursor-pointer relative"
                 onClick={() => onView(item)}
             >
                 <div className="flex flex-col sm:flex-row justify-between items-start mb-1">
@@ -44,7 +60,9 @@ function TimelineItem({ item, onView, onDelete, threadIds, gmailLabels }) {
                         {item.sourceName && `Source: ${item.sourceName}`}
                     </p>
                 )}
-                <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3">{item.content}</p>
+                <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3 line-clamp-2">
+                    {createSummary(item.html, item.content)}
+                </p>
                 {allTags.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {allTags.map(tag => (

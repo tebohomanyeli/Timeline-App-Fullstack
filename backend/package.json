@@ -11,10 +11,11 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "mailparser": "^3.7.4",
-    "node-mbox": "^2.0.0",
+    "mbox-reader": "^1.2.0",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.1",
-    "multer": "^2.0.1"
+    "multer": "^2.0.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
