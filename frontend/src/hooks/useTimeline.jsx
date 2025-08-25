@@ -72,6 +72,50 @@ export const useTimeline = () => {
         }
     };
 
+    const handleExportEmails = async () => {
+        try {
+            const response = await fetch(`${API_URL}/emails/export-all`);
+            if (!response.ok) {
+                throw new Error('Failed to export emails');
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'all-emails.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (error) {
+            console.error("Error exporting emails:", error);
+            alert("Failed to export the emails.");
+        }
+    };
+
+    const handleExportEmailAsPdf = async (email) => {
+        try {
+            const response = await fetch(`${API_URL}/emails/export/${email.id}`);
+            if (!response.ok) {
+                throw new Error('Failed to export email as PDF');
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            // Sanitize the title to create a valid filename
+            const filename = email.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            a.download = `${filename}.pdf`;
+
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (error) {
+            console.error("Error exporting email as PDF:", error);
+            alert("Failed to export the email as a PDF.");
+        }
+    };
+
     // FIXED: Handles deleting an item by calling the backend
     const handleDeleteItem = async (idToDelete) => {
         try {
@@ -120,6 +164,8 @@ export const useTimeline = () => {
         handleDeleteItem, 
         clearItemsToEmpty, 
         resetItemsToDefault, 
-        handleImportItems 
+        handleImportItems, 
+        handleExportEmails,
+        handleExportEmailAsPdf
     };
 };

@@ -1,10 +1,10 @@
 // src/components/DetailedView.jsx
 import React from 'react';
-import { X, Edit, Calendar, Clock, User, Tag, Mail, Users, Hash, FileText, FolderOpen, MessageSquare, StickyNote, Paperclip } from 'lucide-react';
+import { X, Edit, Calendar, Clock, User, Tag, Mail, Users, Hash, FileText, FolderOpen, MessageSquare, StickyNote, Paperclip, Download } from 'lucide-react'; // Import Download icon
 import { getIcon, formatDate, formatTime } from '../utils/index.jsx';
 import { ITEM_TYPES } from '../constants/index.jsx';
 
-function DetailedView({ item, onClose, onEdit, threadIds, gmailLabels }) {
+function DetailedView({ item, onClose, onEdit, onExportPdf, threadIds, gmailLabels }) { // Add onExportPdf prop
     if (!item) return null;
 
     const allTags = [
@@ -161,6 +161,10 @@ function DetailedView({ item, onClose, onEdit, threadIds, gmailLabels }) {
 
                 <div className="bg-gray-50 dark:bg-gray-800/50 p-4 flex justify-end space-x-3 rounded-b-xl border-t dark:border-gray-700">
                     <button type="button" onClick={onClose} className="bg-white dark:bg-gray-700 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">Close</button>
+                    <button type="button" onClick={() => onExportPdf(item)} className="bg-green-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 flex items-center">
+                        <Download className="w-4 h-4 mr-2"/>
+                        Export to PDF
+                    </button>
                     <button type="button" onClick={() => onEdit(item)} className="bg-blue-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 flex items-center">
                         <Edit className="w-4 h-4 mr-2"/>
                         Edit

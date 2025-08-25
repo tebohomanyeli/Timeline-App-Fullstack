@@ -4,7 +4,8 @@ const attachmentSchema = new mongoose.Schema({
   filename: String,
   contentType: String,
   size: Number,
-  fileId: String, // Changed from 'content: Buffer'
+  fileId: String,
+  disposition: String, // Added to distinguish 'inline' from 'attachment'
 });
 
 const emailSchema = new mongoose.Schema({

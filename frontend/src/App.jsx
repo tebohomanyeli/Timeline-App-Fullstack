@@ -14,7 +14,7 @@ import ConfirmClearModal from './components/ConfirmClearModal';
 import DetailedView from './components/DetailedView';
 
 function App() {
-    const { items, isLoading, handleSaveItem, handleDeleteItem, clearItemsToEmpty, resetItemsToDefault, handleImportItems } = useTimeline();
+    const { items, isLoading, handleSaveItem, handleDeleteItem, clearItemsToEmpty, resetItemsToDefault, handleImportItems, handleExportEmails, handleExportEmailAsPdf } = useTimeline();
     const [theme, toggleTheme] = useDarkMode();
     
     // --- Filter States ---
@@ -241,6 +241,7 @@ function App() {
                 visibleItems={filteredItems.length}
                 onClearAll={handleClearAllClick}
                 onAdd={openEventModalForAdd}
+                onExport={handleExportEmails}
             />
             
             <EventModal
@@ -266,6 +267,7 @@ function App() {
                 item={selectedItem}
                 onClose={closeDetailedView}
                 onEdit={handleEditFromDetailedView}
+                onExportPdf={handleExportEmailAsPdf}
                 threadIds={threadIds}
                 gmailLabels={gmailLabels}
             />

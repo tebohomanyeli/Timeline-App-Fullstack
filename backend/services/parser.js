@@ -46,23 +46,17 @@ async function parseMboxFile(filePath, bucket) {
                 attachments: [],
             };
 
-            if (parsedEmail.attachments && parsedEmail.attachments.length > 0) {
+           if (parsedEmail.attachments && parsedEmail.attachments.length > 0) {
                 for (const att of parsedEmail.attachments) {
-                    // Use a promise to handle the async stream upload
+                    // THE FIX IS HERE: We now save all parts, but include the disposition
                     const attachmentId = await new Promise((resolve, reject) => {
                         const readableStream = Readable.from(att.content);
-                        const uploadStream = bucket.openUploadStream(att.filename, {
+                        const uploadStream = bucket.openUploadStream(att.filename || 'untitled', {
                             contentType: att.contentType,
                         });
                         
-                        uploadStream.on('finish', () => {
-                            resolve(uploadStream.id);
-                        });
-
-                        uploadStream.on('error', (err) => {
-                            reject(err);
-                        });
-
+                        uploadStream.on('finish', () => resolve(uploadStream.id));
+                        uploadStream.on('error', (err) => reject(err));
                         readableStream.pipe(uploadStream);
                     });
 
@@ -71,6 +65,7 @@ async function parseMboxFile(filePath, bucket) {
                         contentType: att.contentType,
                         size: att.size,
                         fileId: attachmentId.toString(),
+                        disposition: att.disposition || 'inline', // Save the disposition type
                     });
                 }
             }

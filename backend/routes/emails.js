@@ -1,6 +1,8 @@
+// backend/routes/emails.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const puppeteer = require('puppeteer');
 const { parseMboxFile } = require('../services/parser');
 const Email = require('../models/Email');
 const mongoose = require('mongoose');
@@ -31,6 +33,148 @@ router.get('/emails', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+
+// Route to export all emails as JSON
+router.get('/emails/export', async (req, res) => {
+    try {
+        const emails = await Email.find().sort({ timestamp: -1 });
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', 'attachment; filename=emails.json');
+        res.json(emails);
+    } catch (error) {
+        console.error('Error exporting emails:', error);
+        res.status(500).json({ message: 'Error exporting emails' });
+    }
+});
+
+router.get('/emails/export-all', async (req, res) => {
+    try {
+        const emails = await Email.find().sort({ timestamp: -1 });
+
+        const allEmailsHtml = emails.map(email => `
+            <div class="email-container" style="page-break-after: always;">
+                <div class="email-header">
+                    <h1>${email.subject}</h1>
+                    <p><strong>From:</strong> ${email.from}</p>
+                    <p><strong>To:</strong> ${email.to.join(', ')}</p>
+                    <p><strong>Date:</strong> ${new Date(email.timestamp).toUTCString()}</p>
+                </div>
+                <div class="email-body">
+                    ${email.html || `<p>${email.content.replace(/\n/g, '<br>')}</p>`}
+                </div>
+            </div>
+        `).join('');
+
+        const fullHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; }
+                    .email-container { border-bottom: 2px solid #000; padding-bottom: 20px; }
+                    .email-header { padding-bottom: 15px; border-bottom: 1px solid #e0e0e0; margin-bottom: 15px; }
+                    h1 { font-size: 24px; margin: 0 0 10px; }
+                    p { margin: 0 0 5px; color: #333; }
+                    .email-body { margin-top: 20px; font-size: 16px; line-height: 1.6; }
+                </style>
+            </head>
+            <body>
+                ${allEmailsHtml}
+            </body>
+            </html>
+        `;
+
+        const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        const page = await browser.newPage();
+        
+        await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+        
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
+        });
+        
+        await browser.close();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=all-emails.pdf');
+        res.send(pdfBuffer);
+
+    } catch (error) {
+        console.error('Error exporting all emails as PDF:', error);
+        res.status(500).json({ message: 'Error exporting all emails' });
+    }
+});
+
+router.get('/emails/export/:id', async (req, res) => {
+    try {
+        const email = await Email.findOne({ id: req.params.id });
+        if (!email) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+
+        const emailHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; }
+                    .email-header { padding-bottom: 15px; border-bottom: 1px solid #e0e0e0; margin-bottom: 15px; }
+                    h1 { font-size: 24px; margin: 0 0 10px; }
+                    p { margin: 0 0 5px; color: #333; }
+                    .email-body { margin-top: 20px; font-size: 16px; line-height: 1.6; }
+                </style>
+            </head>
+            <body>
+                <div class="email-header">
+                    <h1>${email.subject}</h1>
+                    <p><strong>From:</strong> ${email.from}</p>
+                    <p><strong>To:</strong> ${email.to.join(', ')}</p>
+                    <p><strong>Date:</strong> ${new Date(email.timestamp).toUTCString()}</p>
+                </div>
+                <div class="email-body">
+                    ${email.html || `<p>${email.content.replace(/\n/g, '<br>')}</p>`}
+                </div>
+            </body>
+            </html>
+        `;
+
+        const browser = await puppeteer.launch({
+            // Important for running in Docker or Linux environments without a display
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        const page = await browser.newPage();
+        
+        await page.setContent(emailHtml, { waitUntil: 'networkidle0' });
+        
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: {
+                top: '20px',
+                right: '20px',
+                bottom: '20px',
+                left: '20px'
+            }
+        });
+        
+        await browser.close();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=email-${email.id}.pdf`);
+        res.send(pdfBuffer);
+
+    } catch (error) {
+        console.error('Error exporting email as PDF:', error);
+        res.status(500).json({ message: 'Error exporting email' });
+    }
+});
+
 
 router.get('/emails/:id', async (req, res) => {
     try {
